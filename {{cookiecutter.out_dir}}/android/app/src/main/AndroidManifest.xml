@@ -33,5 +33,13 @@
 
         <!-- {{ANDROID_SERVICES}} -->
         <!-- {{ANDROID_RECEIVERS}} -->
+
+        {%- for svc in services %}
+        <service
+            android:name="{{ svc.name }}"
+            {% if svc.foregroundServiceType %}android:foregroundServiceType="{{ svc.foregroundServiceType }}"{% endif %}
+            android:exported="{{ svc.exported | lower }}"/>
+        {%- endfor %}
+            
     </application>
 </manifest>
