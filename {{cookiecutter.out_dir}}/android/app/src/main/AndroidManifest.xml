@@ -30,5 +30,8 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- {{ANDROID_SERVICES}} -->
+        <!-- {{ANDROID_RECEIVERS}} -->
     </application>
 </manifest>
