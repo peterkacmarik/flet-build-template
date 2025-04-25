@@ -40,6 +40,19 @@
             {% if svc.foregroundServiceType %}android:foregroundServiceType="{{ svc.foregroundServiceType }}"{% endif %}
             android:exported="{{ svc.exported | lower }}"/>
         {%- endfor %}
+        
+        {%- for rcv in receivers %}
+        <receiver
+            android:name="{{ rcv.name }}"
+            android:enabled="{{ rcv.enabled | lower }}"
+            android:exported="{{ rcv.exported | lower }}">
+            {%- for action in rcv.intentFilters %}
+            <intent-filter>
+                <action android:name="{{ action }}" />
+            </intent-filter>
+            {%- endfor %}
+        </receiver>
+        {%- endfor %}
             
     </application>
 </manifest>
