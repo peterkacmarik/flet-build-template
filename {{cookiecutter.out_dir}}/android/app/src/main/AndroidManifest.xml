@@ -5,25 +5,23 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
-        <!-- Pridané služby -->
         <!-- flet: services -->
         {% for service_name, service_config in cookiecutter.options.android_services.items() %}
         <service
             android:name="{{ service_config.name }}"
             android:exported="{{ service_config.exported | lower }}"
-            {% if service_config.type is defined %}
+            {% if service_config.type is defined -%}
             android:type="{{ service_config.type | join('|') }}"
-            {% endif %}/>
+            {%- endif %}/>
         {% endfor %}
-
-        <!-- Pridané prijímače -->
+        
         <!-- flet: receivers -->
         {% for receiver_name, receiver_config in cookiecutter.options.android_receivers.items() %}
         <receiver
             android:name="{{ receiver_config.name }}"
             android:enabled="{{ receiver_config.enabled | lower }}"
             android:exported="{{ receiver_config.exported | lower }}">
-            {% for intent in receiver_config.intent_filters %}
+            {% for intent in receiver_config.intent_filters -%}
             <intent-filter>
                 <action android:name="{{ intent }}"/>
             </intent-filter>
