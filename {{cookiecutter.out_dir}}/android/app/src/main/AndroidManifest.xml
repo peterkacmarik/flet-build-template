@@ -31,6 +31,7 @@
             tools:ignore="{{ service_config.tools_ignore }}"
             {%- endif %}/>
         {% endfor %}
+        <!-- flet: end of service -->
         
         <!-- flet: receivers -->
         {% for receiver_name, receiver_config in cookiecutter.options.android_receivers.items() %}
@@ -45,6 +46,7 @@
             {% endfor %}
         </receiver>
         {% endfor %}
+        <!-- flet: end of receivers -->
             
         <!-- flet: meta-data {% for k, v in cookiecutter.options.android_meta_data.items() %} -->
         <meta-data android:name="{{ k }}" android:value="{{ v }}" />
