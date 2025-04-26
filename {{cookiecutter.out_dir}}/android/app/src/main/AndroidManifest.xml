@@ -7,7 +7,7 @@
 
         <!-- Pridané služby -->
         <!-- flet: services -->
-        {% for service_name, service_config in {{ cookiecutter.options.android_services.items() }} %}
+        {% for service_name, service_config in cookiecutter.options.android_services.items() %}
         <service
             android:name="{{ service_config.name }}"
             android:exported="{{ service_config.exported | lower }}"
