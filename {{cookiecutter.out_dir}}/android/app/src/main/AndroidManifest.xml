@@ -1,4 +1,6 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- flet: permission {% for k, v in cookiecutter.options.android_permissions.items() %} {% if v == True %} -->
     <uses-permission android:name="{{ k }}" />
     <!-- flet: end of permission {% endif %} {% endfor %} -->
@@ -21,9 +23,12 @@
         {% for service_name, service_config in cookiecutter.options.android_services.items() %}
         <service
             android:name="{{ service_config.name }}"
+            {% if service_config.foreground_service_type is defined -%}
+            android:foregroundServiceType="{{ service_config.foreground_service_type }}"
+            {%- endif %}
             android:exported="{{ service_config.exported | lower }}"
-            {% if service_config.type is defined -%}
-            android:type="{{ service_config.type | join('|') }}"
+            {% if service_config.tools_ignore is defined -%}
+            tools:ignore="{{ service_config.tools_ignore }}"
             {%- endif %}/>
         {% endfor %}
         
