@@ -31,28 +31,29 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <!-- {{ANDROID_SERVICES}} -->
-        <!-- {{ANDROID_RECEIVERS}} -->
-
-        {%- for svc in services %}
+        <!-- flet: services -->
+        {% for service_name, service_config in cookiecutter.options.android_services.items() %}
         <service
-            android:name="{{ svc.name }}"
-            {% if svc.foregroundServiceType %}android:foregroundServiceType="{{ svc.foregroundServiceType }}"{% endif %}
-            android:exported="{{ svc.exported | lower }}"/>
-        {%- endfor %}
+            android:name="{{ service_config.name }}"
+            android:exported="{{ service_config.exported | lower }}"
+            {% if service_config.type is defined %}
+            android:type="{{ service_config.type | join('|') }}"
+            {% endif %}/>
+        {% endfor %}
         
-        {%- for rcv in receivers %}
+        <!-- flet: receivers -->
+        {% for receiver_name, receiver_config in cookiecutter.options.android_receivers.items() %}
         <receiver
-            android:name="{{ rcv.name }}"
-            android:enabled="{{ rcv.enabled | lower }}"
-            android:exported="{{ rcv.exported | lower }}">
-            {%- for action in rcv.intentFilters %}
+            android:name="{{ receiver_config.name }}"
+            android:enabled="{{ receiver_config.enabled | lower }}"
+            android:exported="{{ receiver_config.exported | lower }}">
+            {% for intent in receiver_config.intent_filters %}
             <intent-filter>
-                <action android:name="{{ action }}" />
+                <action android:name="{{ intent }}"/>
             </intent-filter>
-            {%- endfor %}
+            {% endfor %}
         </receiver>
-        {%- endfor %}
+        {% endfor %}
             
     </application>
 </manifest>
