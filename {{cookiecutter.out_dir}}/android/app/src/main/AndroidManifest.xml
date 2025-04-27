@@ -27,6 +27,7 @@
             android:foregroundServiceType="{{ service_config.foreground_service_type }}"
             {%- endif %}
             android:exported="{{ service_config.exported | lower }}"
+            android:enabled="{{ service_config.enabled | lower }}"
             {% if service_config.tools_ignore is defined -%}
             tools:ignore="{{ service_config.tools_ignore }}"
             {%- endif %}/>
