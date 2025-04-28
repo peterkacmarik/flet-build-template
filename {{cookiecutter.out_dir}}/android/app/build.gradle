@@ -2,6 +2,7 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
+    id 'com.chaquo.python' version '16.0.0'
 }
 
 def localProperties = new Properties()
@@ -21,9 +22,6 @@ def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
-
-apply plugin: 'com.android.application'
-apply plugin: 'com.chaquo.python' 
 
 android {
     namespace "{{ cookiecutter.org_name_2 }}.{{ cookiecutter.package_name }}"
@@ -101,17 +99,23 @@ android {
     }
 }
 
-chaquopy {
-    python {
-        // konzistentná verzia Pythona
-        version "3.12.9"
-    }
-    // kam umiestniš .py súbory v module:
-    default: src/main/python
-}
-
 flutter {
     source '../..'
 }
 
-dependencies {}
+dependencies {
+     implementation fileTree(dir: "libs", include: ["*.jar"])
+     implementation "androidx.core:core-ktx:1.9.0"
+     // … ostatné Flet/Flutter závislosti …
+ }
+
+chaquopy {
+    python {
+        version "3.11"
+    }
+    sourceSets {
+        main {
+            srcDir "src/main/python"   // sem vkladáš service/main.py a vlastné moduly
+        }
+    }
+}
