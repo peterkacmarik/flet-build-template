@@ -112,8 +112,8 @@ chaquopy {
         version "3.12"
     }
     sourceSets {
-        main {
-            srcDir "src/main/python"   // sem vkladáš service/main.py a vlastné moduly
+        getByName("main") {
+            srcDir("src/main/python")   // sem vkladáš service/main.py a vlastné moduly
         }
     }
 }
