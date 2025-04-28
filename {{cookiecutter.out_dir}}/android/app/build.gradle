@@ -1,16 +1,7 @@
-buildscript {
-   repositories { google(); mavenCentral() }
-    dependencies {
-        classpath "com.android.tools.build:gradle:7.4.0"
-        classpath "com.chaquo.python:gradle:16.0.0" 
-    }
-}
-
 plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
-    id("com.chaquo.python")
 }
 
 def localProperties = new Properties()
@@ -103,17 +94,6 @@ android {
 // {% else %}
             signingConfig signingConfigs.debug
 // flet: end of android_signing {% endif %}
-        }
-    }
-}
-
-chaquopy {
-    defaultConfig {
-        version "3.12"
-    }
-    sourceSets {
-        getByName("main") {
-            srcDir("src/main/python")   // sem vkladáš service/main.py a vlastné moduly
         }
     }
 }
