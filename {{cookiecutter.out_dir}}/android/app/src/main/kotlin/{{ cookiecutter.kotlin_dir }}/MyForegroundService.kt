@@ -1,50 +1,60 @@
 package com.example.workation
 
 import android.app.Service
+import android.content.Intent
+import android.os.IBinder
+import android.os.Build
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.Intent
-import android.os.Build
-import android.os.IBinder
-import android.util.Log
 
 class MyForegroundService : Service() {
 
-    private val CHANNEL_ID = "MyServiceChannel"
+    companion object {
+        const val CHANNEL_ID = "stopwatch_channel"
+        const val NOTIFICATION_ID = 1001
+    }
 
     override fun onCreate() {
         super.onCreate()
-        Log.d("MyService", "onCreate() volané")
-        createNotificationChannel()
+        // Vytvoríme NotificationChannel pre Android 8+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Stopwatch Channel",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            val mgr = getSystemService(NotificationManager::class.java)
+            mgr.createNotificationChannel(channel)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d("MyService", "onStartCommand() volané")
-        val notification = Notification.Builder(this, CHANNEL_ID)
-            .setContentTitle("Foreground Service")
-            .setContentText("Bežím na pozadí...")
-            .setSmallIcon(android.R.drawable.ic_menu_info_details)
-            .build()
+        // Postavíme základnú notifikáciu
+        val notification: Notification = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder(this, CHANNEL_ID)
+                .setContentTitle("Stopky")
+                .setContentText("Timer beží…")
+                .setSmallIcon(R.mipmap.ic_launcher)  // použime launcher ikonu
+                .build()
+        } else {
+            @Suppress("DEPRECATION")
+            Notification.Builder(this)
+                .setContentTitle("Stopky")
+                .setContentText("Timer beží…")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .build()
+        }
 
-        startForeground(1, Notification)
+        // Tu prepneme servicu do foreground – Android ju nebude zabíjať
+        startForeground(NOTIFICATION_ID, notification)
+
+        // Keď python behá na pozadí (tvoj timer-thread), môže cez NotificationManager
+        // a Notification.Builder buď priamo alebo z tvojho Python kódu
+        // notifikáciu aktualizovať – práve to už máš hotové v update_notification().
 
         return START_STICKY
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null // Nepotrebujeme binding
-    }
-
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val serviceChannel = NotificationChannel(
-                CHANNEL_ID,
-                "Foreground Service Channel",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(serviceChannel)
-        }
-    }
+    override fun onBind(intent: Intent?): IBinder? = null
 }
