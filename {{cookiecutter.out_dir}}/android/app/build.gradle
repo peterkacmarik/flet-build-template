@@ -2,7 +2,7 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
-    id 'com.chaquo.python' version '16.0.0'
+    id "com.chaquo.python"
 }
 
 def localProperties = new Properties()
