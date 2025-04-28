@@ -1,4 +1,3 @@
-// android/app/src/main/kotlin/com/example/workation/PythonService.kt
 package com.example.workation
 
 import android.app.Service
@@ -20,11 +19,11 @@ class PythonService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        // 1) Bootstrap Chaquopy-Python (len raz!)
-        if (! Python.isStarted()) {
+        // 1) Naštartovať Python runtime
+        if (!Python.isStarted()) {
             Python.start(AndroidPlatform(this))
         }
-        // 2) Vytvor NotificationChannel (Android 8+)
+        // 2) Vytvoriť notification channel
         val mgr = getSystemService(NotificationManager::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val chan = NotificationChannel(
@@ -37,12 +36,12 @@ class PythonService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // 3) Spusti Python modul service/main.py:main()
+        // 3) Zavoláme service/main.py:main()
         Python.getInstance()
               .getModule("service.main")
               .callAttr("main")
 
-        // 4) Postav základnú notifikáciu a prepnime sa na POPREDIE
+        // 4) Postavíme základnú notifikáciu
         val noti = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Notification.Builder(this, CHANNEL_ID)
                 .setContentTitle("WorkAtion Service")
@@ -58,15 +57,7 @@ class PythonService : Service() {
                 .build()
         }
         startForeground(NOTIFICATION_ID, noti)
-
-        // Žiadame Android, aby nám službu znovu spustil, ak by ju systém zabudol:
         return START_STICKY
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        // Python modul môže v main() ukončiť svoju prácu, 
-        // tu môžeš cleanup, ak potrebuješ.
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
