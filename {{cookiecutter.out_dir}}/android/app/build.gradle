@@ -104,7 +104,7 @@ android {
 chaquopy {
     python {
         // konzistentná verzia Pythona
-        version "3.8.10"
+        version "3.12.9"
     }
     // kam umiestniš .py súbory v module:
     default: src/main/python
