@@ -2,7 +2,7 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
-    id "com.chaquo.python"
+    id("com.chaquo.python") version "16.0.0" apply false
 }
 
 def localProperties = new Properties()
@@ -99,12 +99,6 @@ android {
     }
 }
 
-flutter {
-    source '../..'
-}
-
-dependencies {}
-
 chaquopy {
     python {
         version "3.11"
@@ -115,3 +109,9 @@ chaquopy {
         }
     }
 }
+
+flutter {
+    source '../..'
+}
+
+dependencies {}
