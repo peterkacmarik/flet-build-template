@@ -22,6 +22,9 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+apply plugin: 'com.android.application'
+apply plugin: 'com.chaquo.python' 
+
 android {
     namespace "{{ cookiecutter.org_name_2 }}.{{ cookiecutter.package_name }}"
     compileSdkVersion flutter.compileSdkVersion
@@ -96,6 +99,15 @@ android {
 // flet: end of android_signing {% endif %}
         }
     }
+}
+
+chaquopy {
+    python {
+        // konzistentná verzia Pythona
+        version "3.8.10"
+    }
+    // kam umiestniš .py súbory v module:
+    default: src/main/python
 }
 
 flutter {
