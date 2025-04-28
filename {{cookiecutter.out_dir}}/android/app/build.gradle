@@ -108,7 +108,7 @@ android {
 }
 
 chaquopy {
-    python {
+    defaultConfig {
         version "3.12"
     }
     sourceSets {
