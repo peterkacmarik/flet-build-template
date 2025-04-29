@@ -1,4 +1,4 @@
-package package com.example.workation.service
+package package com.example.workation
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
