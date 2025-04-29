@@ -2,117 +2,140 @@ package com.example.workation.service
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.Build
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.runtime.mutableStateOf
+import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import com.example.workation.util.Constants.*
-import com.example.workation.util.formatTime
-import com.example.workation.util.pad
-import dagger.hilt.android.AndroidEntryPoint
+import com.example.stopwatch.R
+import com.example.stopwatch.util.Constants
+import com.example.stopwatch.util.formatTime
+import com.example.stopwatch.util.pad
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-@ExperimentalAnimationApi
-@AndroidEntryPoint
 class StopwatchService : Service() {
-    @Inject lateinit var notificationManager: NotificationManager
-    @Inject lateinit var notificationBuilder: NotificationCompat.Builder
 
     private val binder = StopwatchBinder()
     private var duration: Duration = Duration.ZERO
     private lateinit var timer: Timer
 
-    var seconds = mutableStateOf("00")
-        private set
-    var minutes = mutableStateOf("00")
-        private set
-    var hours   = mutableStateOf("00")
-        private set
-    var currentState = mutableStateOf(StopwatchState.Idle)
-        private set
+    private lateinit var notificationManager: NotificationManager
+    private lateinit var notificationBuilder: NotificationCompat.Builder
 
-    override fun onBind(intent: Intent?) = binder
+    // držiaky na texty, ktoré budeme aktualizovať
+    private var hours = "00"
+    private var minutes = "00"
+    private var seconds = "00"
+
+    override fun onCreate() {
+        super.onCreate()
+        // init manažéra a builderu
+        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        initNotificationBuilder()
+    }
+
+    override fun onBind(intent: Intent?): IBinder = binder
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_SERVICE_START  -> startTimer()
-            ACTION_SERVICE_STOP   -> pauseTimer()
-            ACTION_SERVICE_CANCEL -> cancelTimer()
+            Constants.ACTION_SERVICE_START  -> startStopwatch()
+            Constants.ACTION_SERVICE_STOP   -> pauseStopwatch()
+            Constants.ACTION_SERVICE_CANCEL -> cancelStopwatch()
         }
         return START_STICKY
     }
 
-    private fun startTimer() {
-        currentState.value = StopwatchState.Started
-        setupForeground()
-        timer = fixedRateTimer(period = 1000L) {
-            duration += 1.seconds
-            updateTimeUnits()
-            updateNotification(
-                hours = hours.value,
-                minutes = minutes.value,
-                seconds = seconds.value
-            )
-        }
-    }
-
-    private fun pauseTimer() {
-        if (this::timer.isInitialized) timer.cancel()
-        currentState.value = StopwatchState.Stopped
-        updateNotification(
-            hours = hours.value,
-            minutes = minutes.value,
-            seconds = seconds.value
-        )
-    }
-
-    private fun cancelTimer() {
-        pauseTimer()
-        duration = Duration.ZERO
-        currentState.value = StopwatchState.Idle
-        updateTimeUnits()
-        stopForegroundService()
-    }
-
-    private fun updateTimeUnits() {
-        duration.toComponents { h, m, s, _ ->
-            hours.value   = h.toInt().pad()
-            minutes.value = m.pad()
-            seconds.value = s.pad()
-        }
-    }
-
-    private fun setupForeground() {
-        createNotificationChannel()
-        startForeground(NOTIFICATION_ID, notificationBuilder
-            .setContentText(formatTime(hours.value, minutes.value, seconds.value))
-            .addAction(0, "Stop", ServiceHelper.stopPendingIntent(this))
-            .addAction(0, "Cancel", ServiceHelper.cancelPendingIntent(this))
-            .build()
-        )
-    }
-
-    private fun stopForegroundService() {
-        notificationManager.cancel(NOTIFICATION_ID)
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        stopSelf()
-    }
-
-    private fun createNotificationChannel() {
+    private fun initNotificationBuilder() {
+        // channel
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                NOTIFICATION_CHANNEL_ID,
-                NOTIFICATION_CHANNEL_NAME,
+                Constants.NOTIFICATION_CHANNEL_ID,
+                Constants.NOTIFICATION_CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_LOW
             )
             notificationManager.createNotificationChannel(channel)
         }
+        // základný builder
+        notificationBuilder = NotificationCompat.Builder(this, Constants.NOTIFICATION_CHANNEL_ID)
+            .setContentTitle("Stopwatch")
+            .setContentText("00:00:00")
+            .setSmallIcon(R.drawable.ic_baseline_timer_24)
+            .setOngoing(true)
+            .setContentIntent(createPendingIntentClick())
+    }
+
+    private fun createPendingIntentClick(): PendingIntent {
+        val intent = Intent(this, MainActivity::class.java)
+        return PendingIntent.getActivity(
+            this,
+            0,
+            intent,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
+        )
+    }
+
+    private fun createActionIntent(action: String, requestCode: Int): PendingIntent {
+        val intent = Intent(this, StopwatchService::class.java).apply {
+            this.action = action
+        }
+        return PendingIntent.getService(
+            this,
+            requestCode,
+            intent,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
+        )
+    }
+
+    private fun startStopwatch() {
+        // upravíme tlačidlá v notifikácii
+        notificationBuilder.clearActions()
+            .addAction(0, "Pause", createActionIntent(Constants.ACTION_SERVICE_STOP, Constants.STOP_REQUEST_CODE))
+            .addAction(0, "Cancel", createActionIntent(Constants.ACTION_SERVICE_CANCEL, Constants.CANCEL_REQUEST_CODE))
+
+        // spustíme foreground
+        startForeground(Constants.NOTIFICATION_ID, notificationBuilder.build())
+
+        // spustíme timer
+        timer = fixedRateTimer(initialDelay = 1000L, period = 1000L) {
+            duration += 1.seconds
+            duration.toComponents { h, m, s, _ ->
+                hours = h.toInt().pad()
+                minutes = m.pad()
+                seconds = s.pad()
+            }
+            // aktualizujeme notifikáciu
+            notificationManager.notify(
+                Constants.NOTIFICATION_ID,
+                notificationBuilder.setContentText(formatTime(hours, minutes, seconds)).build()
+            )
+        }
+    }
+
+    private fun pauseStopwatch() {
+        if (this::timer.isInitialized) timer.cancel()
+        // prepneme tlačidlo znovu na Resume
+        notificationBuilder.clearActions()
+            .addAction(0, "Resume", createActionIntent(Constants.ACTION_SERVICE_START, Constants.RESUME_REQUEST_CODE))
+            .addAction(0, "Cancel", createActionIntent(Constants.ACTION_SERVICE_CANCEL, Constants.CANCEL_REQUEST_CODE))
+
+        notificationManager.notify(
+            Constants.NOTIFICATION_ID,
+            notificationBuilder.setContentText(formatTime(hours, minutes, seconds)).build()
+        )
+    }
+
+    private fun cancelStopwatch() {
+        if (this::timer.isInitialized) timer.cancel()
+        duration = Duration.ZERO
+        hours = "00"; minutes = "00"; seconds = "00"
+        stopForeground(true)
+        stopSelf()
     }
 
     override fun onDestroy() {
