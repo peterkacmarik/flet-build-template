@@ -10,10 +10,10 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import com.example.stopwatch.R
-import com.example.stopwatch.util.Constants
-import com.example.stopwatch.util.formatTime
-import com.example.stopwatch.util.pad
+import com.example.workation.R
+import com.example.workation.util.Constants
+import com.example.workation.util.formatTime
+import com.example.workation.util.pad
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 import kotlin.time.Duration
