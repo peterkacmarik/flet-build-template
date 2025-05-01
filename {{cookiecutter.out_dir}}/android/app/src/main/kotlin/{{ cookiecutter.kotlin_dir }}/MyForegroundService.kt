@@ -60,7 +60,7 @@ class MyForegroundService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Stopwatch")
             .setContentText(timeText)
-            .setSmallIcon(R.drawable.ic_timer)  // pridaj si vlastnú ikonu v res/drawable
+            .setSmallIcon(R.mipmap.ic_launcher)  // pridaj si vlastnú ikonu v res/drawable
             .setOngoing(true)
             .build()
     }
